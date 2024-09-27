@@ -6,6 +6,9 @@ from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
 import io
 import base64
+from docx import Document
+from pptx import Presentation
+import pdfkit
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # For session management
@@ -81,6 +84,46 @@ def generate_graph():
     session['graph_url'] = graph_url
 
     return render_template('display_graph.html', graph_url=graph_url)
+
+@app.route('/add_graph', methods=['POST'])
+def add_graph():
+    return redirect(url_for('select_model'))  # Redirect back to model selection for new graph
+
+@app.route('/delete_graph', methods=['POST'])
+def delete_graph():
+    session.pop('graph_url', None)  # Remove current graph from session
+    return redirect(url_for('select_model'))
+
+@app.route('/write_summary', methods=['GET'])
+def write_summary():
+    return render_template('write_summary.html')
+
+@app.route('/save_summary', methods=['POST'])
+def save_summary():
+    session['summary'] = request.form['summary']
+    return redirect(url_for('generate_report'))
+
+@app.route('/generate_report', methods=['GET'])
+def generate_report():
+    summary = session.get('summary', '')
+    graph_url = session.get('graph_url', '')
+
+    # Generate the report in the chosen format (let's use DOCX here as an example)
+    doc = Document()
+    doc.add_heading('Analysis Report', 0)
+    doc.add_paragraph(summary)
+
+    # Add the graph image to the report
+    if graph_url:
+        img_data = base64.b64decode(graph_url)
+        with open('graph.png', 'wb') as f:
+            f.write(img_data)
+
+        doc.add_picture('graph.png')
+
+    doc.save('report.docx')
+    return send_file('report.docx', as_attachment=True)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -3,6 +3,9 @@ import pandas as pd
 import os
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
+import matplotlib.pyplot as plt
+import io
+import base64
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # For session management
@@ -56,6 +59,28 @@ def train_model():
 
     return redirect(url_for('select_graph'))
 
+@app.route('/generate_graph', methods=['POST'])
+def generate_graph():
+    X = pd.DataFrame(session['X'])
+    y = pd.Series(session['y'])
+    graph_type = request.form['graph_type']
+
+    plt.figure()
+    if graph_type == 'scatter':
+        plt.scatter(X, y)
+    elif graph_type == 'line':
+        plt.plot(X, y)
+
+    # Save graph image as base64
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    graph_url = base64.b64encode(img.getvalue()).decode()
+
+    # Store graph data in session for possible deletion or report generation
+    session['graph_url'] = graph_url
+
+    return render_template('display_graph.html', graph_url=graph_url)
 
 if __name__ == '__main__':
     app.run(debug=True)

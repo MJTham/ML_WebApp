@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import pandas as pd
 import os
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # For session management
@@ -27,6 +29,33 @@ def upload_file():
     session['data'] = df.to_dict()
 
     return render_template('select_model.html', columns=df.columns)
+
+
+@app.route('/train_model', methods=['POST'])
+def train_model():
+    df = pd.DataFrame(session['data'])  # Retrieve dataset from session
+    model_type = request.form['model']
+    column = request.form['column']
+
+    X = df.drop(column, axis=1)  # Features
+    y = df[column]  # Target
+
+    if model_type == 'linear_regression':
+        model = LinearRegression()
+    elif model_type == 'decision_tree':
+        model = DecisionTreeRegressor()
+
+    model.fit(X, y)
+
+    # Save model and data for use in graph generation
+    session['model'] = model
+    session['X'] = X.to_dict()
+    session['y'] = y.to_dict()
+    session['column'] = column
+    session['model_type'] = model_type
+
+    return redirect(url_for('select_graph'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

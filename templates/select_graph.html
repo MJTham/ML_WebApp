@@ -1,0 +1,11 @@
+<h1>Select Graph to Generate</h1>
+<form action="/generate_graph" method="POST">
+    <label>Select Graph Type:</label>
+    <select name="graph_type" required>
+        <option value="scatter">Scatter Plot</option>
+        <option value="line">Line Graph</option>
+        <!-- Add more graph types if needed -->
+    </select>
+
+    <button type="submit">Generate Graph</button>
+</form>

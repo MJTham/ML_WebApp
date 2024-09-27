@@ -1,0 +1,18 @@
+<h1>Select Model and Column</h1>
+<form action="/train_model" method="POST">
+    <label>Select Column to Study:</label>
+    <select name="column" required>
+        {% for col in columns %}
+            <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Select Model:</label>
+    <select name="model" required>
+        <option value="linear_regression">Linear Regression</option>
+        <option value="decision_tree">Decision Tree</option>
+        <!-- Add more models here as needed -->
+    </select>
+
+    <button type="submit">Train Model</button>
+</form>
